@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"jpleatherland.dev"
+	],
+	"copyright": " ",
+	"description": "A fuzzy finder utility",
+	"license": "Unlicense",
+	"name": "fzf"
+}

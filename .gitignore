@@ -22,3 +22,6 @@ docs/
 
 # Code coverage
 *.lst
+
+fzf
+fzf-test-library
