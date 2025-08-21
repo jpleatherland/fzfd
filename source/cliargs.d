@@ -3,41 +3,43 @@ module cliargs;
 import std.getopt;
 import std.regex;
 import std.stdio;
-import std.variant;
+import std.sumtype;
 import std.typecons;
 
-alias Pattern = Algebraic!(string, Regex!char);
+alias pattern = SumType!(string, Regex!char);
 
-Tuple!(int, Pattern) extractArgs(string[] args)
+Tuple!(int, pattern) extractArgs(string[] args)
 {
 	int depth = 0;
 	string patternStr;
 	bool isRegex = false;
 
-	getopt(args, "d|depth", &depth, "pattern", &patternStr, "r|regex", &isRegex);
+	getopt(args, "depth|d", &depth, "pattern", &patternStr, "regex|r", &isRegex);
 
-	writeln("Depth: ", depth);
-	writeln("Pattern: ", patternStr);
-	writeln("Is Regex: ", isRegex);
+	if (patternStr.length == 0 && args.length > 1)
+		patternStr = args[1];
+
+	if (patternStr.length == 0)
+		throw new Exception("No valid pattern provided. Please specify a pattern or a regex.");
 
 	if (isRegex)
 	{
+		Regex!char rePattern;
 		try
 		{
-			Regex!char pattern = regex(patternStr);
-			return Tuple!(int, Pattern)(depth, Pattern(pattern));
+			rePattern = regex(patternStr);
 		}
 		catch (Exception e)
 		{
+			// Tip: prefer `throw;` to preserve the original stack trace
+			// (but either way, this path never returns)
 			writeln("Invalid regex pattern: ", e.msg);
 			throw e;
 		}
+		return Tuple!(int, pattern)(depth, pattern(rePattern));
 	}
-
-	if (patternStr.length == 0 && args.length > 1)
+	else
 	{
-		return Tuple!(int, Pattern)(depth, Pattern(args[1]));
+		return Tuple!(int, pattern)(depth, pattern(patternStr));
 	}
-
-	throw new Exception("No valid pattern provided. Please specify a pattern or a regex.");
 }
