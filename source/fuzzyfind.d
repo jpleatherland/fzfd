@@ -11,6 +11,12 @@ import std.regex;
 
 string[] fuzzyFind(FuzzyFindParameters params)
 {
+	const string root = absolutePath(params.dir);
+	return fuzzyFindImpl(params, root);
+}
+
+private string[] fuzzyFindImpl(FuzzyFindParameters params, const string root)
+{
 	string[] matches;
 	//do not follow symlinks, let depth control traversal
 	foreach (DirEntry entry; dirEntries(params.dir, SpanMode.shallow, false))
@@ -19,15 +25,15 @@ string[] fuzzyFind(FuzzyFindParameters params)
 
 		if (hit)
 		{
-			matches ~= relativePath(entry.name, params.dir);
+			matches ~= relativePath(entry.name, root);
 		}
 
 		if (entry.isDir() && params.depth > 0)
 		{
 			try
 			{
-				matches ~= fuzzyFind(FuzzyFindParameters(params.depth - 1, params.pattern, entry
-						.name));
+				matches ~= fuzzyFindImpl(FuzzyFindParameters(params.depth - 1, params.pattern, entry
+						.name), root);
 			}
 			catch (FileException)
 			{
@@ -37,4 +43,5 @@ string[] fuzzyFind(FuzzyFindParameters params)
 	}
 
 	return matches;
+
 }
