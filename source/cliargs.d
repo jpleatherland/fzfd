@@ -10,9 +10,8 @@ FuzzyFindParameters extractArgs(string[] args)
 {
 	int depth = 0;
 	string patternStr;
-	bool isRegex = false;
 
-	getopt(args, "depth|d", &depth, "pattern", &patternStr, "regex|r", &isRegex);
+	getopt(args, "depth|d", &depth, "pattern", &patternStr);
 
 	if (patternStr.length == 0 && args.length > 1)
 		patternStr = args[1];
@@ -20,24 +19,15 @@ FuzzyFindParameters extractArgs(string[] args)
 	if (patternStr.length == 0)
 		throw new Exception("No valid pattern provided. Please specify a pattern or a regex.");
 
-	if (isRegex)
+	Regex!char rePattern;
+	try
 	{
-		Regex!char rePattern;
-		try
-		{
-			rePattern = regex(patternStr);
-		}
-		catch (Exception e)
-		{
-			// Tip: prefer `throw;` to preserve the original stack trace
-			// (but either way, this path never returns)
-			writeln("Invalid regex pattern: ", e.msg);
-			throw e;
-		}
-		return FuzzyFindParameters(depth, Pattern(rePattern));
+		rePattern = regex(patternStr);
 	}
-	else
+	catch (Exception e)
 	{
-		return FuzzyFindParameters(depth, Pattern(patternStr));
+		writeln("Invalid regex pattern: ", e.msg);
+		throw e;
 	}
+	return FuzzyFindParameters(depth, rePattern);
 }
