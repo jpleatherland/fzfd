@@ -3,12 +3,10 @@ module cliargs;
 import std.getopt;
 import std.regex;
 import std.stdio;
-import std.sumtype;
 import std.typecons;
+import types;
 
-alias pattern = SumType!(string, Regex!char);
-
-Tuple!(int, pattern) extractArgs(string[] args)
+FuzzyFindParameters extractArgs(string[] args)
 {
 	int depth = 0;
 	string patternStr;
@@ -36,10 +34,10 @@ Tuple!(int, pattern) extractArgs(string[] args)
 			writeln("Invalid regex pattern: ", e.msg);
 			throw e;
 		}
-		return Tuple!(int, pattern)(depth, pattern(rePattern));
+		return FuzzyFindParameters(depth, Pattern(rePattern));
 	}
 	else
 	{
-		return Tuple!(int, pattern)(depth, pattern(patternStr));
+		return FuzzyFindParameters(depth, Pattern(patternStr));
 	}
 }

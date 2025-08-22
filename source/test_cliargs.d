@@ -3,7 +3,8 @@ import cliargs;
 import std.stdio;
 import std.sumtype;
 import std.regex;
-import std.regex: regexMatch = match;
+import std.regex : regexMatch = match;
+import std.exception;
 
 unittest
 {
@@ -11,7 +12,7 @@ unittest
 	auto result = extractArgs(args);
 	result[1].match!(
 		(Regex!char r) => writeln("regex: ", r),
-		(string s) => assert("abc" == s) 
+		(string s) => assert("abc" == s)
 	);
 	assert(result[0] == 3);
 
@@ -46,26 +47,9 @@ unittest
 	);
 
 	// Test invalid regex
-	bool threw = false;
-	try
-	{
-		extractArgs(["program", "--pattern", "[unterminated", "--regex"]);
-	}
-	catch (Exception e)
-	{
-		threw = true;
-	}
-	assert(threw, "Expected exception for invalid regex");
-
+	assertThrown!Exception(extractArgs([
+			"program", "--pattern", "[unterminated", "--regex"
+		]));
 	// Test missing pattern
-	threw = false;
-	try
-	{
-		extractArgs(["program", "--depth", "1"]);
-	}
-	catch (Exception e)
-	{
-		threw = true;
-	}
-	assert(threw, "Expected exception for missing pattern");
+	assertThrown!Exception(extractArgs(["program", "--depth", "1"]));
 }
