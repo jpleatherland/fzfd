@@ -2,6 +2,7 @@ import std.stdio;
 import std.getopt;
 import core.runtime;
 import std.regex;
+import std.array;
 import std.typecons;
 import std.sumtype;
 import std.file;
@@ -26,9 +27,11 @@ void main(string[] args)
 	extractedArgs.dir = getcwd();
 	results = fuzzyFind(extractedArgs);
 
-	foreach (result; results)
-	{
-		writeln(result);
-	}
+	stdout.rawWrite(results.join("\n") ~ "\n");
+	stdout.flush();
+	// foreach (result; results)
+	// {
+	// 	writeln(result);
+	// }
 
 }

@@ -8,17 +8,17 @@ import std.regex;
 unittest
 {
 	// assert depth string match
-	FuzzyFindParameters params = FuzzyFindParameters(1, regex("types"), getcwd());
+	FuzzyFindParameters params = FuzzyFindParameters(1, PatternType(regex("types")), getcwd());
 	string[] results = fuzzyFind(params);
 	assert(results.length > 0);
 
 	// assert no depth
-	FuzzyFindParameters params2 = FuzzyFindParameters(0, regex("types"), getcwd());
+	FuzzyFindParameters params2 = FuzzyFindParameters(0, PatternType(regex("types")), getcwd());
 	string[] results2 = fuzzyFind(params2);
 	assert(results2.length == 0);
 
 	// assert regex match
-	FuzzyFindParameters params3 = FuzzyFindParameters(1, regex("t.*s"), getcwd());
+	FuzzyFindParameters params3 = FuzzyFindParameters(1, PatternType(regex("t.*s")), getcwd());
 	string[] results3 = fuzzyFind(params3);
-	assert(results3.length == 5);
+	assert(results3.length == 6);
 }

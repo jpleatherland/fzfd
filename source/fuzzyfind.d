@@ -6,8 +6,9 @@ import std.stdio;
 import std.path;
 import std.typecons;
 import std.file;
-import std.algorithm.searching;
 import std.regex;
+import std.algorithm.searching;
+import std.sumtype : sumTypeMatch = match;
 
 string[] fuzzyFind(FuzzyFindParameters params)
 {
@@ -21,7 +22,7 @@ private string[] fuzzyFindImpl(FuzzyFindParameters params, const string root)
 	//do not follow symlinks, let depth control traversal
 	foreach (DirEntry entry; dirEntries(params.dir, SpanMode.shallow, false))
 	{
-		auto hit = matchFirst(baseName(entry.name), params.pattern);
+		auto hit = fuzzyMatch(baseName(entry.name), params.pattern);
 
 		if (hit)
 		{
@@ -44,4 +45,25 @@ private string[] fuzzyFindImpl(FuzzyFindParameters params, const string root)
 
 	return matches;
 
+}
+
+private bool orderedMatch(string target, string pattern)
+{
+	size_t i = 0;
+	foreach (char c; target)
+	{
+		if (i < pattern.length && c == pattern[i])
+		{
+			i++;
+		}
+	}
+	return i == pattern.length;
+}
+
+private bool fuzzyMatch(string target, PatternType pattern)
+{
+	return pattern.sumTypeMatch!(
+		(Regex!char re) => !matchFirst(target, re).empty,
+		(string raw) => orderedMatch(target, raw)
+	);
 }

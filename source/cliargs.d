@@ -4,6 +4,7 @@ import std.getopt;
 import std.regex;
 import std.stdio;
 import std.typecons;
+import std.exception : collectException;
 import types;
 
 FuzzyFindParameters extractArgs(string[] args)
@@ -19,15 +20,39 @@ FuzzyFindParameters extractArgs(string[] args)
 	if (patternStr.length == 0)
 		throw new Exception("No valid pattern provided. Please specify a pattern or a regex.");
 
-	Regex!char rePattern;
-	try
+	PatternType pattern;
+	if (looksLikeRegex(patternStr))
 	{
-		rePattern = regex(patternStr);
+		try
+		{
+			auto rePattern = regex(patternStr);
+			pattern = PatternType(rePattern);
+			writeln("Using regex pattern: ", patternStr);
+		}
+		catch (Exception)
+		{
+			pattern = PatternType(patternStr);
+			writeln("Invalid regex, using string pattern: ", patternStr);
+		}
 	}
-	catch (Exception e)
+	else
 	{
-		writeln("Invalid regex pattern: ", e.msg);
-		throw e;
+		pattern = PatternType(patternStr);
+		writeln("Using string pattern: ", patternStr);
 	}
-	return FuzzyFindParameters(depth, rePattern);
+
+	return FuzzyFindParameters(depth, pattern);
+}
+
+private bool looksLikeRegex(string s)
+{
+	// Heuristic: starts and ends with /, or contains common regex metacharacters
+	if (s.length > 2 && s[0] == '/' && s[$ - 1] == '/')
+		return true;
+	foreach (c; s)
+	{
+		if (c == '.' || c == '*' || c == '+' || c == '?' || c == '[' || c == ']' || c == '(' || c == ')' || c == '^' || c == '$' || c == '|')
+			return true;
+	}
+	return false;
 }
