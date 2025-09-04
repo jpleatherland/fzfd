@@ -12,7 +12,7 @@ import std.sumtype : sumTypeMatch = match;
 
 string[] fuzzyFind(FuzzyFindParameters params)
 {
-	const string root = absolutePath(params.dir);
+	const string root = absolutePath(params.dirToSearch);
 	return fuzzyFindImpl(params, root);
 }
 
@@ -20,31 +20,34 @@ private string[] fuzzyFindImpl(FuzzyFindParameters params, const string root)
 {
 	string[] matches;
 	//do not follow symlinks, let depth control traversal
-	foreach (DirEntry entry; dirEntries(params.dir, SpanMode.shallow, false))
+	try
 	{
-		auto hit = fuzzyMatch(baseName(entry.name), params.pattern);
-
-		if (hit)
+		foreach (DirEntry entry; dirEntries(params.dirToSearch, SpanMode.shallow, false))
 		{
-			matches ~= relativePath(entry.name, root);
-		}
+			bool hit = fuzzyMatch(baseName(entry.name), params.pattern);
 
-		if (entry.isDir() && params.depth > 0)
-		{
-			try
+			if (hit)
+			{
+				matches ~= relativePath(entry.name, root);
+			}
+
+			if (entry.isDir() && params.depth > 0)
 			{
 				matches ~= fuzzyFindImpl(FuzzyFindParameters(params.depth - 1, params.pattern, entry
 						.name), root);
 			}
-			catch (FileException)
-			{
-				// skip unreadable subdir
-			}
 		}
+	}
+	catch (FileException e)
+	{
+		writeln("Unable to read: ", e.message());
+	}
+	catch (Exception e)
+	{
+		writeln("Error: ", e.message());
 	}
 
 	return matches;
-
 }
 
 private bool orderedMatch(string target, string pattern)
@@ -63,7 +66,8 @@ private bool orderedMatch(string target, string pattern)
 private bool fuzzyMatch(string target, PatternType pattern)
 {
 	return pattern.sumTypeMatch!(
-		(Regex!char re) => !matchFirst(target, re).empty,
-		(string raw) => orderedMatch(target, raw)
+		(Regex!char re) => !matchFirst(target, re)
+			.empty,
+			(string raw) => orderedMatch(target, raw)
 	);
 }

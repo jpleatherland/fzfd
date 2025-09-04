@@ -11,5 +11,5 @@ struct FuzzyFindParameters
 {
 	int depth;
 	PatternType pattern;
-	string dir;
+	string dirToSearch; //initial dir if different from . or current dir during traversal
 }

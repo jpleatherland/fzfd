@@ -2,6 +2,7 @@ module cliargs;
 
 import std.getopt;
 import std.regex;
+import std.file;
 import std.stdio;
 import std.typecons;
 import std.exception : collectException;
@@ -11,8 +12,9 @@ FuzzyFindParameters extractArgs(string[] args)
 {
 	int depth = 0;
 	string patternStr;
+	string path;
 
-	getopt(args, "depth|d", &depth, "pattern", &patternStr);
+	getopt(args, "depth|d", &depth, "pattern", &patternStr, "path|p", &path);
 
 	if (patternStr.length == 0 && args.length > 1)
 		patternStr = args[1];
@@ -40,8 +42,10 @@ FuzzyFindParameters extractArgs(string[] args)
 		pattern = PatternType(patternStr);
 		writeln("Using string pattern: ", patternStr);
 	}
+	if (path.length == 0)
+		path = getcwd();
 
-	return FuzzyFindParameters(depth, pattern);
+	return FuzzyFindParameters(depth, pattern, path);
 }
 
 private bool looksLikeRegex(string s)

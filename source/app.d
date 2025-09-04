@@ -24,14 +24,8 @@ void main(string[] args)
 		return;
 	}
 
-	extractedArgs.dir = getcwd();
 	results = fuzzyFind(extractedArgs);
 
 	stdout.rawWrite(results.join("\n") ~ "\n");
 	stdout.flush();
-	// foreach (result; results)
-	// {
-	// 	writeln(result);
-	// }
-
 }
